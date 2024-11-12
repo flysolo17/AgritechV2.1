@@ -12,6 +12,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:heif_converter/heif_converter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:win32/win32.dart';
 
 import '../models/transaction/OrderItems.dart';
 import '../models/transaction/PaymentMethod.dart';
@@ -224,39 +225,27 @@ class TransactionRepostory {
 
   Future<void> clearNotification(List<Details> notif) async {
     var batch = _firestore.batch();
-
-    // Iterate through each notification detail
     for (var detail in notif) {
-      // Create a reference to the document that corresponds to this detail
       var transactionRef =
           _firestore.collection(COLLECTION_NAME).doc(detail.transactionID);
 
       DocumentSnapshot transactionDoc = await transactionRef.get();
       if (transactionDoc.exists) {
-        // Get the current details array
         List<dynamic> currentDetails = transactionDoc['details'] ?? [];
-
-        // Find the index of the detail that we want to update
-        int index = currentDetails.indexWhere((d) => d['id'] == detail.id);
-        if (index != -1) {
-          // Update the 'seen' property of the specific detail
-          currentDetails[index]['seen'] = true;
-
-          // Now, set the updated details array back to Firestore
-          batch.set(
-              transactionRef,
-              {
-                'details': currentDetails,
-              },
-              SetOptions(merge: true)); // Merge to keep other fields intact
-        }
+        currentDetails.forEach((e) {
+          e['seen'] = true;
+        });
+        batch.set(
+            transactionRef,
+            {
+              'details': currentDetails,
+            },
+            SetOptions(merge: true));
       }
     }
 
-    // Commit the batch operation
     await batch.commit();
 
-    // Optionally, you might want to also clear the local state or notify the user
     print("All notifications marked as seen.");
   }
 }

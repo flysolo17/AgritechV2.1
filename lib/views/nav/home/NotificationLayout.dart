@@ -53,6 +53,7 @@ class _NotificationLayoutState extends State<NotificationLayout> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
+                  print(snapshot.error);
                   return const Center(
                       child: Text("Error loading notifications"));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
